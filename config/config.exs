@@ -10,7 +10,9 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-config :game_of_life, edge: 9
+config :game_of_life, 
+  edge: 17,
+  init: :pd
 #
 # And access this configuration in your application as:
 #

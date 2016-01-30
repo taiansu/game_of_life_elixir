@@ -1,19 +1,40 @@
 defmodule GameOfLife.World do
   use GenServer
   @edge Application.get_env(:game_of_life, :edge)
+  @init Application.get_env(:game_of_life, :init)
 
-  def start(config \\ [{4, 3}, {4, 4}, {4, 5}]) do
-    GenServer.start(GameOfLife.World, config, name: :world)
+  def start(init \\ @init) do
+    GenServer.start(GameOfLife.World, get_cell_list(init), name: :world)
   end
 
   def tick do
     GenServer.cast(:world, {:tick})
   end
 
-  def init(config) do
-    map = generate_map(config)
-    draw(map)
-    {:ok, map}
+  def loop(rate \\ 500) do
+    for _ <- Stream.cycle([:ok]) do
+      :timer.sleep(rate)
+      tick
+    end
+  end
+
+  def set(arg) do
+    GenServer.cast(:world, {:set, get_cell_list(arg)})
+  end
+
+  def get_cell_list(arg) do
+    case arg do
+      is_atom -> GameOfLife.Pattern.get(arg)
+      is_list -> arg
+    end
+  end
+
+  def init(cell_list) do
+    {:ok, set_map(cell_list)}
+  end
+
+  def handle_cast({:set, cell_list}, map) do
+    {:noreply, set_map(cell_list)}
   end
 
   def handle_cast({:tick}, map) do
@@ -38,6 +59,12 @@ defmodule GameOfLife.World do
     end
   end
 
+  defp set_map(cell_list) do
+    cell_list
+    |> generate_map
+    |> draw
+  end
+
   defp async_query({key, _} = cell, map, pid) do
     spawn(fn ->
       send(pid, {:next, key, Cell.survive?(cell, map)})
@@ -56,5 +83,6 @@ defmodule GameOfLife.World do
       IO.puts ''
     end
     IO.puts ''
+    map
   end
 end
