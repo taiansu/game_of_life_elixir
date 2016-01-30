@@ -1,6 +1,6 @@
 defmodule GameOfLife.World do
   use GenServer
-  @edge 9
+  @edge Application.get_env(:game_of_life, :edge)
 
   def start(config \\ [{4, 3}, {4, 4}, {4, 5}]) do
     GenServer.start(GameOfLife.World, config, name: :world)

@@ -10,11 +10,11 @@ use Mix.Config
 
 # You can configure for your application as:
 #
-#     config :game_of_life_elixir, key: :value
+config :game_of_life, edge: 9
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:game_of_life_elixir, :key)
+#     Application.get_env(:game_of_life, :key)
 #
 # Or configure a 3rd-party app:
 #
