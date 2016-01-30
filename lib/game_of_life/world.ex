@@ -1,5 +1,6 @@
 defmodule GameOfLife.World do
   use GenServer
+  @edge 9
 
   def start(config \\ [{4, 3}, {4, 4}, {4, 5}]) do
     GenServer.start(GameOfLife.World, config, name: :world)
@@ -16,9 +17,11 @@ defmodule GameOfLife.World do
   end
 
   def handle_cast({:tick}, map) do
-    Enum.each(map, fn(cell) -> async_query(cell, map, self) end)
+    Enum.each(map, fn cell ->
+      async_query(cell, map, self)
+    end)
 
-    new_map = Enum.reduce(1..map_size(map), %{}, fn(_, accu) -> 
+    new_map = Enum.reduce(1..map_size(map), %{}, fn _, accu ->
       receive do
         {:next, key, status} -> Map.put(accu, key, status)
       end
@@ -29,7 +32,7 @@ defmodule GameOfLife.World do
   end
 
   defp generate_map(config) do
-    for x <- 0..9, y <- 0..9, into: %{} do
+    for x <- 0..@edge, y <- 0..@edge, into: %{} do
       alive = if Enum.member?(config, {x, y}), do: true, else: false
       {{x, y}, alive}
     end
@@ -41,16 +44,14 @@ defmodule GameOfLife.World do
     end)
   end
 
-  defp symbol(alive) do
+  defp to_symbol(alive) do
     if alive, do: "O", else: "-"
   end
 
   defp draw(map) do
-    for y <- 0..9 do
-      for x <- 0..9 do
-        symbol(map[{x, y}])
-        |> String.rjust(3)
-        |> IO.write
+    for y <- 0..@edge do
+      for x <- 0..@edge do
+        map[{x, y}] |> to_symbol |> String.rjust(3) |> IO.write
       end
       IO.puts ''
     end
@@ -62,14 +63,15 @@ defmodule Cell do
     case n = neighbors_alive(cell, map) do
       2 -> alive?
       3 -> true
-      _ when n > -1 and n < 9 -> false
+      _ when n > -1 and n < @edge -> false
     end
   end
 
   defp neighbors_alive(cell, map) do
-    neighbors(cell)
-    |> Enum.reduce(0, fn(neighbor, accu) -> 
-        if map[neighbor] == true, do: accu + 1, else: accu
+    cell
+    |> neighbors
+    |> Enum.reduce(0, fn neighbor, accu ->
+        if map[neighbor], do: accu + 1, else: accu
        end)
   end
 
