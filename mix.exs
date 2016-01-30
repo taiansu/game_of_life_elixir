@@ -2,7 +2,7 @@ defmodule GameOfLife.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :game_of_life_elixir,
+    [app: :game_of_life,
      version: "0.0.1",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
@@ -30,6 +30,6 @@ defmodule GameOfLife.Mixfile do
   #
   # Type "mix help deps" for more examples and options
   defp deps do
-    []
+    [{:exrm, ">= 1.0.0-rc7"}]
   end
 end
