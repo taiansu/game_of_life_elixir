@@ -42,21 +42,13 @@ defmodule GameOfLife.World do
       async_query(cell, map, self)
     end)
 
-    new_map = Enum.reduce(1..map_size(map), %{}, fn _, accu ->
+    Enum.reduce(1..map_size(map), %{}, fn _, accu ->
       receive do
         {:next, key, status} -> Map.put(accu, key, status)
       end
     end)
-
-    draw(new_map)
-    {:noreply, new_map}
-  end
-
-  defp generate_map(config) do
-    for x <- 0..@edge, y <- 0..@edge, into: %{} do
-      alive = if Enum.member?(config, {x, y}), do: true, else: false
-      {{x, y}, alive}
-    end
+    |> draw
+    |> fn new_map -> {:noreply, new_map} end
   end
 
   defp set_map(cell_list) do
@@ -65,14 +57,11 @@ defmodule GameOfLife.World do
     |> draw
   end
 
-  defp async_query({key, _} = cell, map, pid) do
-    spawn(fn ->
-      send(pid, {:next, key, Cell.survive?(cell, map)})
-    end)
-  end
-
-  defp to_symbol(alive) do
-    if alive, do: "O", else: "-"
+  defp generate_map(cell_list) do
+    for x <- 0..@edge, y <- 0..@edge, into: %{} do
+      alive = if Enum.member?(cell_list, {x, y}), do: true, else: false
+      {{x, y}, alive}
+    end
   end
 
   defp draw(map) do
@@ -84,5 +73,15 @@ defmodule GameOfLife.World do
     end
     IO.puts ''
     map
+  end
+
+  defp to_symbol(alive) do
+    if alive, do: "O", else: "-"
+  end
+
+  defp async_query({key, _} = cell, map, pid) do
+    spawn(fn ->
+      send(pid, {:next, key, Cell.survive?(cell, map)})
+    end)
   end
 end
