@@ -42,13 +42,14 @@ defmodule GameOfLife.World do
       async_query(cell, map, self)
     end)
 
-    Enum.reduce(1..map_size(map), %{}, fn _, accu ->
+    new_map = Enum.reduce(1..map_size(map), %{}, fn _, accu ->
       receive do
         {:next, key, status} -> Map.put(accu, key, status)
       end
     end)
     |> draw
-    |> fn new_map -> {:noreply, new_map} end
+
+    {:noreply, new_map}
   end
 
   defp set_map(cell_list) do
