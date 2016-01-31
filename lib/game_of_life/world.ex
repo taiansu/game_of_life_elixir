@@ -11,6 +11,10 @@ defmodule GameOfLife.World do
     GenServer.cast(:world, {:tick})
   end
 
+  def set(arg) do
+    GenServer.cast(:world, {:set, get_cell_list(arg)})
+  end
+
   def loop(rate \\ 500) do
     for _ <- Stream.cycle([:ok]) do
       :timer.sleep(rate)
@@ -18,11 +22,7 @@ defmodule GameOfLife.World do
     end
   end
 
-  def set(arg) do
-    GenServer.cast(:world, {:set, get_cell_list(arg)})
-  end
-
-  def get_cell_list(arg) do
+  defp get_cell_list(arg) do
     case arg do
       is_atom -> GameOfLife.Pattern.get(arg)
       is_list -> arg
@@ -33,29 +33,26 @@ defmodule GameOfLife.World do
     {:ok, set_map(cell_list)}
   end
 
-  def handle_cast({:set, cell_list}, map) do
-    {:noreply, set_map(cell_list)}
-  end
-
   def handle_cast({:tick}, map) do
     Enum.each(map, fn cell ->
       async_query(cell, map, self)
     end)
 
-    new_map = Enum.reduce(1..map_size(map), %{}, fn _, accu ->
+    Enum.reduce(1..map_size(map), %{}, fn _, accu ->
       receive do
         {:next, key, status} -> Map.put(accu, key, status)
       end
     end)
     |> draw
+    |> fn (new_map) -> {:noreply, new_map} end.()
+  end
 
-    {:noreply, new_map}
+  def handle_cast({:set, cell_list}, map) do
+    {:noreply, set_map(cell_list)}
   end
 
   defp set_map(cell_list) do
-    cell_list
-    |> generate_map
-    |> draw
+    cell_list |> generate_map |> draw
   end
 
   defp generate_map(cell_list) do
