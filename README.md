@@ -11,7 +11,7 @@ iex(1)> GameOfLife.World.loop
 
 ## Different Pattern
 ```
-iex(2)> GameOfLife.World.set(:glider2)
+iex(2)> GameOfLife.World.set(:glider)
 iex(3)> GameOfLife.World.loop
 ```
 
