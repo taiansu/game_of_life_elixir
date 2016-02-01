@@ -22,12 +22,8 @@ defmodule GameOfLife.World do
     end
   end
 
-  defp get_cell_list(arg) do
-    case arg do
-      is_atom -> GameOfLife.Pattern.get(arg)
-      is_list -> arg
-    end
-  end
+  defp get_cell_list(arg) when is_list(arg), do: arg
+  defp get_cell_list(arg) when is_atom(arg), do: GameOfLife.Pattern.get(arg)
 
   def init(cell_list) do
     {:ok, set_map(cell_list)}
