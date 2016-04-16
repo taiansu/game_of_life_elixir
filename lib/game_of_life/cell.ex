@@ -1,11 +1,9 @@
 defmodule Cell do
-  @edge Application.get_env(:game_of_life, :edge)
-
   def survive?({coord, alive?}, map) do
-    case n = neighbors_alive(coord, map) do
+    case neighbors_alive(coord, map) do
       2 -> alive?
       3 -> true
-      _ when n > -1 and n < @edge -> false
+      _ -> false
     end
   end
 
