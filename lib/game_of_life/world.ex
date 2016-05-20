@@ -30,11 +30,12 @@ defmodule GameOfLife.World do
   end
 
   def handle_cast({:tick}, map) do
+
     Enum.each(map, fn cell ->
       async_query(cell, map, self)
     end)
 
-    Enum.reduce(1..map_size(map), %{}, fn _, accu ->
+    Enum.reduce(map, %{}, fn _, accu ->
       receive do
         {:next, key, status} -> Map.put(accu, key, status)
       end
